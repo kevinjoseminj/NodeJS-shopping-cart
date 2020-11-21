@@ -73,7 +73,10 @@ router.get('/logout', (req, res) => {
 
 router.get('/cart', verifyLogin, async (req, res) => {
   let products = await userHelper.getCartProducts(req.session.user._id)
-  let totalValue = await userHelper.getTotalAmount(req.session.user._id)
+  let totalValue = 0
+  if (products.length > 0) {
+    totalValue = await userHelper.getTotalAmount(req.session.user._id)
+  }
   console.log(products);
   console.log('***' + req.session.user_id);
   res.render('user/cart', { products, user: req.session.user._id, totalValue })
@@ -116,11 +119,7 @@ router.post('/place-order', async (req, res) => {
         res.json(response)
 
       })
-
-
-
     }
-
   })
   console.log(req.body);
 })
@@ -139,8 +138,17 @@ router.get('/view-order-products/:id', async (req, res) => {
   res.render('user/view-order-products', { user: req.session.user, products })
 })
 
-router.post('verify-payment', (req, res) => {
+router.post('/verify-payment', (req, res) => {
   console.log(req.body);
+  userHelper.verifyPayment(req.body).then(() => {
+    userHelper.changePaymentStatus(req.body['order[receipt]']).then(() => {
+      console.log("Payment successful");
+      res.json({ status: true })
+    })
+  }).catch((err) => {
+    console.log(err);
+    res.json({ status: false, errMsg: '' })
+  })
 })
 
 
