@@ -60,7 +60,7 @@ router.post('/login', (req, res) => {
   userHelper.doLogin(req.body).then((response) => {
     if (response.status) {
 
-      req.session.user.loggedIn = true
+      req.session.userloginErr = true
       req.session.user = response.user
       res.redirect('/')
     } else {
